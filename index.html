@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Mi Armario</title>
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Mi Armario"><meta name="apple-mobile-web-app-status-bar-style" content="black"><meta name="theme-color" content="#000000">
+<script>const CONFIG_FIJA={fb:null,cn:"",up:""};</script>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;1,600&family=Inter:wght@400;500&display=swap">
+<style>
+:root{--bg:#000;--cream:#161616;--ink:#fff;--g:#fff;--r:#fff;--pk:#2a2a2a;--line:#333;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.5 Inter,system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+h1,h2,h3{font-family:'Cormorant Garamond',Georgia,serif;font-weight:600;color:var(--ink)}
+h1{font-size:40px;line-height:1}h1 i{color:var(--r)}h2{font-size:26px;margin:22px 0 10px}
+main{padding:20px 18px 120px;max-width:760px;margin:auto;animation:f .4s}
+@keyframes f{from{opacity:0;transform:translateY(8px)}}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;justify-content:space-around;background:rgba(0,0,0,.95);backdrop-filter:blur(12px);border-top:1px solid var(--line);padding:8px 4px calc(8px + env(safe-area-inset-bottom,0px));z-index:5}
+nav button{background:none;border:0;color:var(--ink);font:500 11px Inter;padding:6px 8px;opacity:.5;min-width:58px}
+nav button b{display:block;font-size:20px;font-weight:400}
+nav button.on{opacity:1;color:var(--g)}
+.card{background:var(--cream);border-radius:22px;padding:16px;margin:10px 0}
+.hero{background:var(--cream);border-radius:28px;padding:24px 20px}
+.sw{display:flex;gap:6px;margin-top:14px}.sw i{width:34px;height:34px;border-radius:50%;border:1px solid var(--line)}
+.pair{display:flex;align-items:center;gap:12px}.pair div{display:flex}.pair div i{width:38px;height:38px;border-radius:50%;margin-right:-10px;border:2px solid var(--bg)}
+.grid{columns:2;column-gap:10px}
+.tile{break-inside:avoid;margin-bottom:10px;border-radius:18px;overflow:hidden;background:var(--cream)}
+.tile img{width:100%;display:block}
+.tile span{display:block;padding:8px 10px;font-size:12px}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px}
+.chip{flex:none;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:9px 15px;font:500 13px Inter}
+.chip.on{background:var(--g);color:#1a1210;border-color:var(--g)}
+.pc{display:inline-block;background:var(--bg);border-radius:99px;padding:3px 9px;font-size:11px;margin:2px 2px 2px 0}
+.btn{background:var(--g);color:#1a1210;border:0;border-radius:99px;padding:14px 22px;font:500 15px Inter;min-height:48px}
+.btn.soft{background:var(--pk);color:var(--r)}
+input,select,textarea{width:100%;border:1px solid var(--line);background:#1c1c1c;border-radius:14px;padding:13px;font:16px Inter;color:var(--ink);margin:4px 0 8px}
+.lb{font-size:12px;opacity:.7;display:block;margin-top:6px}
+.fab{position:fixed;right:18px;bottom:calc(84px + env(safe-area-inset-bottom,0px));width:56px;height:56px;border-radius:50%;font-size:28px;padding:0;box-shadow:0 6px 18px rgba(0,0,0,.5);z-index:4}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:flex-end;z-index:9}
+.sheet.on{display:flex}
+.sheet>div{background:#0c0c0c;width:100%;max-height:92%;overflow:auto;border-radius:26px 26px 0 0;padding:22px 18px calc(24px + env(safe-area-inset-bottom,0px))}
+.row{display:flex;gap:8px;overflow-x:auto}.row .tile{flex:none;width:112px;margin:0}
+.empty{text-align:center;padding:36px 10px;opacity:.7}
+.dot{display:inline-block;width:12px;height:12px;border-radius:50%;border:1px solid var(--line);vertical-align:-1px;margin-right:4px}
+.note{font-size:12px;opacity:.7;margin-top:10px}
+</style></head><body>
+<main id="app"></main>
+<button class="btn fab" id="fab" onclick="view==='insp'?openInsp():openSheet()">+</button>
+<nav id="nav"></nav>
+<div class="sheet" id="sheet"><div id="sheetc"></div></div>
+<div class="sheet" id="dlg" style="z-index:20"></div>
+<script>
+const COLORS={"Blanco":"#ffffff","Crema":"#f1e6d3","Beige":"#d9c3a3","Café":"#7a4a32","Rojo":"#c0272d","Rosa":"#e8a0b4","Verde esmeralda":"#1f8a4c","Oliva":"#7d7a2e","Salvia":"#b9c8b0","Ciruela":"#5b2a4a","Vino":"#7b2d3b","Azul mezclilla":"#6f93b8","Azul pastel":"#c5d6e6","Mantequilla":"#f3e3a6","Gris":"#bdbdbd","Negro":"#2b2b2b"};
+const BASE={cats:["Blusas y camisas","Pantalones y jeans","Faldas","Vestidos","Chamarras y abrigos","Zapatos","Bolsas","Accesorios"],prints:["Liso","Animal print","Rayas","Cuadros","Floral","Lunares"],styles:["Casual","Elegante","Minimalista","Romántico","Office","Street","Trend"]};
+const OCC={"Trabajo":["Office","Elegante","Minimalista"],"Universidad":["Casual","Trend","Street"],"Citas":["Romántico","Elegante"],"Salidas":["Street","Trend","Elegante"],"Fiestas":["Elegante","Romántico","Trend"],"Vacaciones":["Casual","Romántico"],"Eventos especiales":["Elegante"],"Casual":["Casual","Minimalista","Trend"]};
+const BOARDS=["Mis looks","Old Money","Clean Girl","Casual Chic","Street Style","Minimalista","Elegante","Romantic Chic","Office Looks","Quiet Luxury","Temporada"];
+const TRENDS=[["Verde + Leopardo","#1f8a4c","#a58a6c","Suéter verde con pantalón animal print: calle de París."],["Rojo + Café","#c0272d","#7a4a32","Cárdigan rojo con blazer o pantalón café."],["Rosa + Verde","#e8a0b4","#7d7a2e","Bolso rosa con zapatillas verde oliva."],["Ciruela + Oliva","#5b2a4a","#7d7a2e","Chamarra ciruela con pantalón oliva."]];
+let S={items:[],insp:[],favs:[],name:"",custom:{cats:[],colors:[],prints:[],styles:[]}};
+try{const d=localStorage.getItem("armario");if(d)S=Object.assign(S,JSON.parse(d))}catch(e){}
+S.custom=Object.assign({cats:[],colors:[],prints:[],styles:[],boards:[]},S.custom);
+let view="home",im="boards",cat="Todas",col="Todos",q="",board="Old Money",out=null,occ="Trabajo",edit=null,tmp=null,tp=[],rids=[],mx={cat:"",color:"",print:""};
+const L=k=>[...(k==="colors"?Object.keys(COLORS):k==="boards"?BOARDS:BASE[k]),...S.custom[k]];
+const hex=c=>COLORS[c]||"#d8c8b8";
+const esc=s=>String(s||"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const $=id=>document.getElementById(id);
+const bd=l=>l.boards||[l.board];
+const pl=p=>`${p.cat} · ${p.color} · ${p.print}`;
+let tb=[],mvId=null;
+function bdHtml(){return L("boards").map(b=>`<button class="chip ${tb.includes(b)?"on":""}" onclick="tgB(this.textContent)">${esc(b)}</button>`).join("")+'<button class="chip" onclick="newBoard()">＋ Nuevo</button>'}
+function tgB(b){tb=tb.includes(b)?tb.filter(x=>x!==b):[...tb,b];$("bl").innerHTML=bdHtml()}
+function newBoard(){dlg("Nombre del nuevo tablero",v=>{v=(v||"").trim();if(!v)return;if(!L("boards").includes(v)){S.custom.boards.push(v);save()}if($("sheet").classList.contains("on")&&$("bl")){tb=[...tb,v];$("bl").innerHTML=bdHtml()}else render()},1)}
+function editB(id){mvId=id;tb=[...bd(S.insp.find(x=>x.id===id))];$("sheetc").innerHTML=`<h2>Tableros de este look</h2><p class="note">Marca todos los tableros donde quieres verlo.</p><div class="chips" id="bl" style="flex-wrap:wrap">${bdHtml()}</div><button class="btn" onclick="const l=S.insp.find(x=>x.id===mvId);l.boards=tb.length?[...tb]:['Mis looks'];save();closeSheet();render()">Guardar</button> <button class="btn soft" onclick="closeSheet()">Cancelar</button>`;$("sheet").classList.add("on")}
+function dlg(msg,fn,inp){const d=$("dlg");d.innerHTML=`<div><p>${esc(msg)}</p>${inp?'<input id="dv" placeholder="Escribe aquí">':""}<br><button class="btn" id="dy">Aceptar</button>${fn?' <button class="btn soft" id="dn">Cancelar</button>':""}</div>`;d.classList.add("on");$("dy").onclick=()=>{const v=inp?$("dv").value:"";d.classList.remove("on");fn&&fn(v)};if(fn)$("dn").onclick=()=>d.classList.remove("on");if(inp)setTimeout(()=>$("dv").focus(),50)}
+window.alert=m=>dlg(m);
+window.CF=null;try{CF=JSON.parse(localStorage.getItem("cfg")||"null")}catch(e){}
+if(CONFIG_FIJA.fb&&CONFIG_FIJA.cn&&CONFIG_FIJA.up)CF=CONFIG_FIJA;
+window.CLOUD=!!(CF&&CF.fb&&CF.cn&&CF.up);
+let uid=null,au,db;
+const lj=u=>new Promise(r=>{const s=document.createElement("script");s.src=u;s.onload=r;document.head.appendChild(s)});
+async function boot(){if(!CLOUD)return;const B="https://cdnjs.cloudflare.com/ajax/libs/";
+ for(const u of ["firebase/9.23.0/firebase-app-compat.min.js","firebase/9.23.0/firebase-auth-compat.min.js","firebase/9.23.0/firebase-firestore-compat.min.js","jszip/3.10.1/jszip.min.js"])await lj(B+u);
+ firebase.initializeApp(CF.fb);au=firebase.auth();db=firebase.firestore();
+ au.onAuthStateChanged(async u=>{if(!u){uid=null;login();return}try{const d=await db.doc("users/"+u.uid).get();if(d.exists)S=Object.assign(S,JSON.parse(d.data().json))}catch(e){alert("No pude leer tu nube. Revisa las reglas de Firestore.");return}uid=u.uid;render()})}
+function login(){$("nav").innerHTML="";$("fab").style.display="none";$("app").innerHTML=`<h1>Mi armario</h1><br><input id="em" type="email" autocomplete="username" placeholder="Correo"><input id="pw" type="password" autocomplete="current-password" placeholder="Contraseña"><button class="btn" onclick="au.signInWithEmailAndPassword($('em').value.trim(),$('pw').value).catch(e=>$('le').textContent='Correo o contraseña incorrectos')">Entrar</button><p id="le" class="note"></p>`}
+function cloudSave(){if(!CLOUD||!uid)return;clearTimeout(window.ct);window.ct=setTimeout(()=>db.doc("users/"+uid).set({json:JSON.stringify(S)}).catch(()=>alert("No se pudo guardar en la nube. Revisa tu conexión.")),500)}
+async function up(x){const f=new FormData();f.append("file",x);f.append("upload_preset",CF.up);const r=await fetch(`https://api.cloudinary.com/v1_1/${CF.cn}/image/upload`,{method:"POST",body:f}),j=await r.json();if(!j.secure_url)throw 0;return j.secure_url}
+async function backup(){dlg("Preparando tu respaldo, espera un momento…");const z=new JSZip(),d=JSON.parse(JSON.stringify(S)),ph=z.folder("fotos");let n=0;
+ for(const o of [...d.items,...d.insp]){try{const b=await(await fetch(o.img)).blob();const f="f"+(n++)+".jpg";ph.file(f,b);o.img="fotos/"+f}catch(e){}}
+ z.file("armario.json",JSON.stringify(d));const bl=await z.generateAsync({type:"blob"}),a=document.createElement("a");a.href=URL.createObjectURL(bl);a.download="respaldo-armario.zip";a.click();dlg("Respaldo listo. Guarda el archivo en un lugar seguro.")}
+function fixCfg(){const t=`<script>const CONFIG_FIJA=${JSON.stringify(CF)};<\/script>`;$("sheetc").innerHTML=`<h2>Fijar mi configuración</h2><p class="note">1. Toca el cuadro y copia todo su texto.<br>2. En GitHub abre index.html, toca el lápiz ✏️ y reemplaza la línea 7 (la que empieza con &lt;script&gt;const CONFIG_FIJA) por lo que copiaste.<br>3. Toca Commit changes. En 2 minutos tu app ya no te pedirá la configuración.</p><textarea id="ft" rows="7" readonly onclick="this.select()"></textarea><button class="btn" onclick="closeSheet()">Cerrar</button>`;$("ft").value=t;$("sheet").classList.add("on")}
+function pickRf(){$("rf").click()}
+async function restore(file){if(!file)return;dlg("Recuperando tu armario, no cierres la página…");try{const z=await JSZip.loadAsync(file),d=JSON.parse(await z.file("armario.json").async("string"));
+ for(const o of [...d.items,...d.insp]){if(String(o.img).startsWith("fotos/"))o.img=await up(await z.file(o.img).async("blob"))}
+ S=Object.assign(S,d);save();render();dlg("Tu armario fue recuperado.")}catch(e){dlg("No pude recuperar ese archivo. Revisa que sea tu respaldo .zip.")}}
+function cfgSheet(){$("sheetc").innerHTML=`<h2>Conectar mi nube</h2><span class="lb">Pega aquí el código de configuración de Firebase</span><textarea id="cf" rows="6"></textarea><span class="lb">Cloudinary: Cloud name</span><input id="cn"><span class="lb">Cloudinary: Upload preset</span><input id="cu"><button class="btn" onclick="saveCfg()">Guardar y conectar</button> <button class="btn soft" onclick="closeSheet()">Cancelar</button>`;$("sheet").classList.add("on")}
+function saveCfg(){const fb={};[...$("cf").value.matchAll(/(\w+)\s*:\s*"([^"]+)"/g)].forEach(m=>fb[m[1]]=m[2]);const cn=$("cn").value.trim(),cu=$("cu").value.trim();if(!fb.apiKey||!fb.projectId||!cn||!cu){alert("Faltan datos. Revisa cada campo.");return}localStorage.setItem("cfg",JSON.stringify({fb,cn,up:cu}));location.reload()}
+function save(){cloudSave();try{localStorage.setItem("armario",JSON.stringify(S))}catch(e){alert("Ya no hay espacio temporal para más fotos. En el siguiente paso las guardaremos en la nube.")}}
+function sel(id,k,val,any){return `<select id="${id}" onchange="nw(this,'${k}','${any||""}')">${any?`<option value="">${any}</option>`:""}${L(k).map(o=>`<option ${o===val?"selected":""}>${esc(o)}</option>`).join("")}<option value="__n">＋ Agregar nuevo…</option></select>`}
+function nw(el,k,any){if(el.value!=="__n")return;const id=el.id,fin=v=>{v=(v||"").trim();if(v&&!L(k).includes(v)){S.custom[k].push(v);save()}$(id).outerHTML=sel(id,k,v,any)};el.selectedIndex=0;dlg("Escribe el nuevo nombre",fin,1)}
+function shrink(file){const M=window.CLOUD?1400:520,Q=window.CLOUD?.85:.72;return new Promise(r=>{const fr=new FileReader();fr.onload=()=>{const im=new Image();im.onload=()=>{const k=Math.min(1,M/Math.max(im.width,im.height)),c=document.createElement("canvas");c.width=im.width*k;c.height=im.height*k;c.getContext("2d").drawImage(im,0,0,c.width,c.height);r(c.toDataURL("image/jpeg",Q))};im.src=fr.result};fr.readAsDataURL(file)})}
+function go(v){view=v;render();scrollTo(0,0)}
+function greet(){const h=new Date().getHours();return h<12?"Buenos días":h<19?"Buenas tardes":"Buenas noches"}
+function tile(i,click){return `<div class="tile" ${click?`onclick="${click}"`:""}><img src="${i.img}" alt=""><span>${esc(i.cat||"")}${i.color?` · <i class="dot" style="background:${hex(i.color)}"></i>${esc(i.color)}`:""}${i.print&&i.print!=="Liso"?" · "+esc(i.print):""}</span></div>`}
+function pick(c,st){const l=S.items.filter(i=>i.cat===c);if(!l.length)return null;const m=l.filter(i=>st.includes(i.style));const p=m.length?m:l;return p[Math.floor(Math.random()*p.length)]}
+function makeOutfit(){const st=OCC[occ],miss=[],parts=[];
+ const dress=Math.random()<.35?pick("Vestidos",st):null;
+ if(dress)parts.push(dress);else{const t=pick("Blusas y camisas",st),b=pick("Pantalones y jeans",st)||pick("Faldas",st);t?parts.push(t):miss.push("una blusa o camisa");b?parts.push(b):miss.push("un pantalón o falda")}
+ [["Zapatos","zapatos"],["Bolsas","una bolsa"],["Accesorios","un accesorio"],["Chamarras y abrigos",""]].forEach(a=>{const p=pick(a[0],st);if(p&&(a[1]||Math.random()<.5))parts.push(p);else if(!p&&a[1])miss.push(a[1])});
+ out={occ,ids:parts.map(p=>p.id),miss};render()}
+const pm=(p,f)=>(!f.cat||p.cat===f.cat)&&(!f.color||p.color===f.color)&&(!f.print||p.print===f.print);
+function mix(){const ls=S.insp.filter(l=>(l.pieces||[]).some(p=>pm(p,mx))),cnt={};
+ ls.forEach(l=>(l.pieces||[]).forEach(p=>{if(!pm(p,mx))cnt[pl(p)]=(cnt[pl(p)]||0)+1}));
+ const tags=Object.entries(cnt).sort((a,b)=>b[1]-a[1]);
+ return `<div class="card"><span class="lb">Busco prenda</span>${sel("fc","cats",mx.cat,"Cualquiera")}<span class="lb">Color</span>${sel("fk","colors",mx.color,"Cualquiera")}<span class="lb">Estampado</span>${sel("fp","prints",mx.print,"Cualquiera")}<button class="btn" onclick="mx={cat:$('fc').value,color:$('fk').value,print:$('fp').value};render()">Ver qué combina</button></div>`+
+ ((mx.cat||mx.color||mx.print)?(ls.length?`<h3>Combina con</h3><div class="chips" style="flex-wrap:wrap">${tags.map(t=>`<span class="pc">${esc(t[0])} ×${t[1]}</span>`).join("")||'<span class="note">Sin otras prendas marcadas</span>'}</div><h3>En estos looks</h3><div class="grid">${ls.map(insTile).join("")}</div>`:`<div class="empty">Ningún look con esa prenda todavía</div>`):"")}
+function insTile(i){return `<div class="tile"><img src="${i.img}" alt=""><div style="padding:8px 10px">${(i.pieces||[]).map(p=>`<span class="pc">${esc(pl(p))}</span>`).join("")}<br><button class="chip" onclick="recreate('${i.id}')">Recrear con mi ropa</button> <button class="chip" onclick="editB('${i.id}')">Tableros</button> <button class="chip" onclick="dlg('¿Quitar este look?',()=>{S.insp=S.insp.filter(x=>x.id!=='${i.id}');save();render()})">✕</button></div></div>`}
+function recreate(id){const l=S.insp.find(x=>x.id===id);rids=[];
+ const sc=(i,p)=>i.cat!==p.cat?-1:1+(i.color===p.color?2:0)+((i.print||"Liso")===p.print?2:0);
+ const rows=(l.pieces||[]).map(p=>{const m=S.items.map(i=>({i,s:sc(i,p)})).filter(x=>x.s>0).sort((a,b)=>b.s-a.s).slice(0,2),t=m[0];
+  if(t)rids.push(t.i.id);
+  return `<div class="card"><b>${esc(pl(p))}</b> — ${!t?"Te falta":t.s===5?"Lo tienes ✓":t.s>=3?"Parecida":"Alternativa (otro color o estampado)"}${m.length?`<br><br><div class="row">${m.map(x=>tile(x.i)).join("")}</div>`:""}</div>`}).join("");
+ $("sheetc").innerHTML=`<h2>Inspiración original</h2><img src="${l.img}" style="width:100%;border-radius:16px"><h2>Con mi ropa</h2>${rows||'<p class="note">Este look no tiene prendas marcadas.</p>'}<br><button class="btn" onclick="S.favs.push({occ:'Recreación',ids:rids,used:false});save();closeSheet()">♡ Guardar recreación</button> <button class="btn soft" onclick="closeSheet()">Cerrar</button>`;$("sheet").classList.add("on")}
+function render(){if(window.CLOUD&&!uid)return;
+ $("nav").innerHTML=[["home","⌂","Inicio"],["closet","▦","Armario"],["style","✦","Estilista"],["insp","❀","Inspo"],["favs","♡","Favoritos"]].map(a=>`<button class="${view===a[0]?"on":""}" onclick="go('${a[0]}')"><b>${a[1]}</b>${a[2]}</button>`).join("");
+ $("fab").style.display=(view==="closet"||(view==="insp"&&im==="boards"))?"block":"none";
+ const A=$("app");
+ if(view==="home"){const o=S.items.slice(-3);
+  A.innerHTML=`<div class="hero"><h1>${greet()}${S.name?", "+esc(S.name):""}</h1><p>Tu armario, con ojo <i>trend</i>.</p>${S.name?"":`<input id="nm" placeholder="¿Cómo te llamas?" onchange="S.name=this.value;save();render()">`}<div class="sw">${["#1f8a4c","#c0272d","#7a4a32","#7d7a2e","#e8a0b4"].map(c=>`<i style="background:${c}"></i>`).join("")}</div></div>
+  <h2>Outfit del día</h2><div class="card">${S.items.length>=2?`<p>Pídele a tu estilista una idea para hoy.</p><br><button class="btn" onclick="go('style')">Crear mi outfit</button>`:`<p>Sube unas prendas para recibir tu primer outfit.</p><br><button class="btn" onclick="go('closet')">Ir a mi armario</button>`}</div>
+  <h2>Combinaciones trend</h2>${TRENDS.map(t=>`<div class="card pair"><div><i style="background:${t[1]}"></i><i style="background:${t[2]}"></i></div><p><b>${t[0]}</b><br>${t[3]}</p></div>`).join("")}
+  <h2>Últimas prendas</h2>${o.length?`<div class="row">${o.map(i=>tile(i)).join("")}</div>`:`<div class="card empty">Aún no hay prendas ✿</div>`}
+  <h2>Mis inspiraciones</h2>${S.insp.length?`<div class="row">${S.insp.slice(-4).map(i=>tile(i)).join("")}</div>`:`<div class="card empty">Guarda looks de Pinterest ✿</div>`}
+  <h2>Mi nube y respaldos</h2><div class="card"><p class="note">${window.CLOUD?"Tus datos y fotos se guardan en tu nube.":"Modo de prueba: los datos están solo en este navegador."}</p><br>${window.CLOUD?'<button class="btn" onclick="backup()">GUARDAR RESPALDO</button> <button class="btn soft" onclick="pickRf()">RECUPERAR MI ARMARIO</button><input type="file" id="rf" accept=".zip" style="display:none" onchange="restore(this.files[0])">'+(CONFIG_FIJA.fb?"":'<br><br><button class="chip" onclick="fixCfg()">Fijar mi configuración</button>'):'<button class="btn" onclick="cfgSheet()">☁ Conectar mi nube</button>'}</div>`}
+ if(view==="closet"){const f=S.items.filter(i=>(cat==="Todas"||i.cat===cat)&&(col==="Todos"||i.color===col)&&(!q||(i.desc+i.cat+i.color+i.style+i.print).toLowerCase().includes(q.toLowerCase())));
+  A.innerHTML=`<h1>Mi armario</h1><br><input placeholder="Buscar prenda, color o estampado" value="${esc(q)}" oninput="q=this.value;clearTimeout(window.t);window.t=setTimeout(render,300)">
+  <div class="chips">${["Todas",...L("cats")].map(c=>`<button class="chip ${cat===c?"on":""}" onclick="cat=this.textContent;render()">${esc(c)}</button>`).join("")}</div>
+  <div class="chips">${["Todos",...L("colors")].map(c=>`<button class="chip ${col===c?"on":""}" onclick="col=this.textContent;render()">${esc(c)}</button>`).join("")}</div>
+  ${f.length?`<div class="grid">${f.map(i=>tile(i,`openSheet('${i.id}')`)).join("")}</div>`:`<div class="empty">Toca + para agregar tu primera prenda ✿</div>`}`}
+ if(view==="style"){A.innerHTML=`<h1>Mi estilista</h1><p>Solo usa prendas que ya registraste.</p><br><select onchange="occ=this.value;out=null;render()">${Object.keys(OCC).map(o=>`<option ${o===occ?"selected":""}>${o}</option>`).join("")}</select><button class="btn" onclick="makeOutfit()">Crear outfit</button>
+  ${out?`<div class="card"><h3>${esc(out.occ)}</h3><br><div class="grid">${out.ids.map(id=>tile(S.items.find(i=>i.id===id)||{img:""})).join("")}</div><p>Combiné prendas de tu armario con estilos que van para ${esc(out.occ.toLowerCase())}: ${esc(OCC[out.occ].join(", ").toLowerCase())}.</p>${out.miss.length?`<p class="note">Te faltaría: ${out.miss.join(", ")}.</p>`:""}<br><button class="btn soft" onclick="S.favs.push({occ:out.occ,ids:out.ids,used:false});save();alert('Guardado en favoritos')">♡ Guardar</button></div>`:""}`}
+ if(view==="insp"){const f=S.insp.filter(i=>bd(i).includes(board));
+  A.innerHTML=`<h1>Inspo</h1><div class="chips" style="margin-top:10px"><button class="chip ${im==="boards"?"on":""}" onclick="im='boards';render()">Tableros</button><button class="chip ${im==="mix"?"on":""}" onclick="im='mix';render()">¿Qué combina?</button></div>`+
+  (im==="mix"?mix():`<div class="chips">${L("boards").map(b=>`<button class="chip ${board===b?"on":""}" onclick="board=this.textContent;render()">${esc(b)}</button>`).join("")}<button class="chip" onclick="newBoard()">＋ Tablero</button></div>${f.length?`<div class="grid">${f.map(insTile).join("")}</div>`:`<div class="empty">Toca + para subir un look de Pinterest ✿</div>`}`)}
+ if(view==="favs"){A.innerHTML=`<h1>Favoritos</h1><br>${S.favs.length?S.favs.map((f,n)=>`<div class="card"><h3>${esc(f.occ)}</h3><div class="row">${f.ids.map(id=>S.items.find(i=>i.id===id)).filter(Boolean).map(i=>tile(i)).join("")}</div><br><button class="chip ${f.used?"on":""}" onclick="S.favs[${n}].used=!S.favs[${n}].used;save();render()">${f.used?"Ya lo usé ✓":"Marcar como usado"}</button> <button class="chip" onclick="S.favs.splice(${n},1);save();render()">Quitar</button></div>`).join(""):`<div class="empty">Aquí verás los looks que guardes ♡</div>`}`}
+}
+function openSheet(id){tmp=null;edit=id?S.items.find(i=>i.id===id):null;const e=edit||{};
+ $("sheetc").innerHTML=`<h2>${edit?"Editar prenda":"Nueva prenda"}</h2>${edit?"":'<div class="chips"><button class="chip on">Una prenda</button><button class="chip" onclick="openInsp(1)">📸 Foto con varias prendas</button></div>'}<input type="file" accept="image/*" onchange="pv(this)"><img id="pvi" src="${e.img||""}" style="width:100%;border-radius:16px;${e.img?"":"display:none"}"><span class="lb">Tipo de prenda</span>${sel("c","cats",e.cat)}<span class="lb">Color</span>${sel("k","colors",e.color)}<span class="lb">Estampado</span>${sel("p","prints",e.print)}<span class="lb">Estilo</span>${sel("s","styles",e.style)}<textarea id="d" rows="2" placeholder="Descripción (opcional)">${esc(e.desc)}</textarea><button class="btn" onclick="saveItem()">Guardar</button> <button class="btn soft" onclick="closeSheet()">Cancelar</button>${edit?` <button class="chip" onclick="delItem()">Eliminar</button><br><br><button class="btn soft" onclick="mixFrom()">Ver con qué combina</button>`:""}`;$("sheet").classList.add("on")}
+function plHtml(){return tp.length?tp.map((p,n)=>`<span class="pc" onclick="tp.splice(${n},1);$('pl').innerHTML=plHtml()">${esc(pl(p))} ✕</span>`).join(""):'<span class="note">Aún no marcas prendas</span>'}
+function mixFrom(){mx={cat:edit.cat,color:edit.color,print:edit.print||"Liso"};closeSheet();im="mix";go("insp")}
+function openInsp(c){tmp=null;tp=[];if(c)board="Mis looks";tb=[board];$("sheetc").innerHTML=`<h2>Nueva foto con varias prendas</h2>${c?'<div class="chips"><button class="chip" onclick="openSheet()">Una prenda</button><button class="chip on">📸 Foto con varias prendas</button></div>':""}<input type="file" accept="image/*" onchange="pv(this)"><img id="pvi" style="width:100%;border-radius:16px;display:none"><span class="lb">Tableros (puedes elegir varios)</span><div class="chips" id="bl" style="flex-wrap:wrap">${bdHtml()}</div><h3>Prendas en las que me centro</h3><button class="btn" onclick="detect()">✨ Detectar prendas con IA</button> <span id="dt" class="note"></span><p class="note">Agrega una por una cada prenda que veas en la foto (pantalón, blusa, zapatos, accesorios…). Luego podrás buscar con qué se combina cada una.</p><span class="lb">Tipo de prenda</span>${sel("pc","cats","")}<span class="lb">Color</span>${sel("pk","colors","")}<span class="lb">Estampado</span>${sel("pp","prints","")}<button class="btn soft" onclick="tp.push({cat:$('pc').value,color:$('pk').value,print:$('pp').value});$('pl').innerHTML=plHtml()">＋ Agregar prenda</button><div id="pl" style="margin:10px 0">${plHtml()}</div><button class="btn" onclick="saveInsp()">Guardar look</button> <button class="btn soft" onclick="closeSheet()">Cancelar</button>`;$("sheet").classList.add("on")}
+const fit=(k,v)=>{v=String(v||"").trim();if(!v)return k==="prints"?"Liso":L(k)[0];const m=L(k).find(x=>x.toLowerCase()===v.toLowerCase());if(m)return m;S.custom[k].push(v);return v};
+async function detect(){if(!tmp){alert("Primero elige una imagen");return}
+ const sm=window.claude&&await claude.use("sample");if(!sm){alert("La detección con IA no está disponible aquí por ahora. Puedes marcar las prendas a mano.");return}
+ $("dt").textContent="Analizando la foto…";
+ try{if(sm.limits){const l=await sm.limits();if(!l.images){alert("La IA no puede leer imágenes aquí por ahora. Marca las prendas a mano.");$("dt").textContent="";return}}
+  const blob=await(await fetch(tmp)).blob();
+  const p=`Analiza esta foto de un outfit. Responde SOLO con un arreglo JSON, sin texto extra: [{"cat":"","color":"","print":""}] con una entrada por cada prenda o accesorio visible (blusa, pantalón, zapatos, bolsa, gorra, joyería, etc.). Usa EXACTAMENTE estos nombres cuando encajen. cat: ${L("cats").join(" | ")}. color: ${L("colors").join(" | ")}. print: ${L("prints").join(" | ")}. Si ninguno encaja, escribe un nombre nuevo corto en español.`;
+  const t=(await sm(p,{images:[blob]})).text,a=JSON.parse(t.match(/\[[\s\S]*\]/)[0]);
+  tp=a.map(x=>({cat:fit("cats",x.cat),color:fit("colors",x.color),print:fit("prints",x.print)}));save();
+  [["pc","cats"],["pk","colors"],["pp","prints"]].forEach(z=>$(z[0]).outerHTML=sel(z[0],z[1],""));
+  $("pl").innerHTML=plHtml();$("dt").textContent=`Detecté ${tp.length} prendas. Toca una para quitarla o agrega más.`}
+ catch(e){$("dt").textContent="No pude analizar la foto. Intenta de nuevo o marca las prendas a mano."}}
+function closeSheet(){$("sheet").classList.remove("on")}
+async function pv(el){if(!el.files[0])return;tmp=await shrink(el.files[0]);if(window.CLOUD){try{tmp=await up(tmp)}catch(e){tmp=null;alert("No se pudo subir la foto a Cloudinary. Revisa tus datos de Cloudinary.");return}}const p=$("pvi");p.src=tmp;p.style.display="block"}
+function saveItem(){const img=tmp||(edit&&edit.img);if(!img){alert("Primero elige una foto");return}
+ const o={id:edit?edit.id:"i"+Date.now(),img,cat:$("c").value,color:$("k").value,print:$("p").value,style:$("s").value,desc:$("d").value};
+ S.items=edit?S.items.map(i=>i.id===o.id?o:i):[...S.items,o];save();closeSheet();render()}
+function delItem(){dlg("¿Eliminar esta prenda?",()=>{S.items=S.items.filter(i=>i.id!==edit.id);save();closeSheet();render()})}
+function saveInsp(){if(!tmp){alert("Primero elige una imagen");return}if(!tp.length){dlg("Marca al menos una prenda de la foto para poder buscarla después.");return}if(!tb.length)tb=["Mis looks"];board=tb[0];S.insp.push({id:"p"+Date.now(),img:tmp,boards:[...tb],pieces:tp});save();closeSheet();if(view==="closet"){view="insp";im="boards"}render()}
+$("sheet").addEventListener("click",e=>{if(e.target.id==="sheet")closeSheet()});
+render();boot();
+</script></body></html>
